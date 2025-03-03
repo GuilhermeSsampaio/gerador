@@ -71,8 +71,8 @@ def generate_document(base_dir, output_filename, include_dirs, include_env=True)
     convert(docx_path, pdf_path)
 
 # Gerar os documentos
-base_dir_front = "front-end"
-base_dir_back = "back-end"
+base_dir_front = "../front-end"
+base_dir_back = "../back-end"
 
 generate_document(base_dir_front, "front-end", ["public", "src"], include_env=False)
 generate_document(base_dir_back, "back-end", ["src"], include_env=True)

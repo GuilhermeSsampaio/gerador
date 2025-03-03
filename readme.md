@@ -20,13 +20,13 @@ Este projeto gera documentos Word e PDF contendo códigos-fonte organizados a pa
 
 1. Clone o repositório:
    ```sh
-   git clone https://github.com/seu-usuario/seu-repositorio.git
+   git clone https://github.com/GuilhermeSsampaio/gerador-documents-lp.git
    cd seu-repositorio
    ```
 2. Crie e ative um ambiente virtual:
    ```sh
    python -m venv venv
-   source venv/bin/activate  # No Windows use: venv\Scripts\activate
+   venv\Scripts\activate
    ```
 3. Instale as dependências:
    ```sh
@@ -38,7 +38,7 @@ Este projeto gera documentos Word e PDF contendo códigos-fonte organizados a pa
 Execute o script principal para gerar os documentos:
 
 ```sh
-python script.py
+python generate.py
 ```
 
 Os arquivos serão gerados na pasta raiz do projeto.
