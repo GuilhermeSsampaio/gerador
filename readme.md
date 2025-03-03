@@ -18,7 +18,7 @@ Este projeto gera documentos Word e PDF contendo códigos-fonte organizados a pa
 
 ## Instalação
 
-1. Clone o repositório:
+1. Clone o repositório (dentro da pasta de LPIII):
    ```sh
    git clone https://github.com/GuilhermeSsampaio/gerador-documents-lp.git
    cd seu-repositorio
@@ -41,7 +41,7 @@ Execute o script principal para gerar os documentos:
 python generate.py
 ```
 
-Os arquivos serão gerados na pasta raiz do projeto.
+Os arquivos serão gerados na pasta raiz do projeto (DO GERADOR).
 
 ## Estrutura dos Arquivos Gerados
 
@@ -53,6 +53,8 @@ Os arquivos serão gerados na pasta raiz do projeto.
 
 - Para incluir arquivos `.env`, altere o parâmetro `include_env` para `True` na função `generate_document`.
 - Para adicionar novos diretórios, modifique a lista `include_dirs`.
+
+- ainda falta adicionar o negrito e corrigir a ordem que aparecem os arquivos
 
 ## Licença
 
