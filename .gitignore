@@ -2,3 +2,5 @@
 
 arquivos-entrega/*
 venv
+
+__pycache__
