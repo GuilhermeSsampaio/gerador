@@ -26,18 +26,51 @@ def add_file_to_doc(doc, dir_name, file_path, add_page_break=True):
         doc_format.add_paragraph_text(doc, error_msg)
 
 def collect_files(base_dir, include_dirs, include_env):
-    """Coleta todos os arquivos, priorizando os dentro de subpastas."""
+    """Coleta todos os arquivos, priorizando os dentro de subpastas mais profundas."""
     all_files = []
     
+    # Diretórios que devem ser ignorados
+    exclude_dirs = [
+        'node_modules',
+        'imagens',
+        '.git',
+        '.vscode',
+        '__pycache__',
+        'venv',
+        'dist',
+        'build',
+        '.next'
+    ]
+    
+    # Arquivos que devem ser ignorados
+    exclude_files = [
+        '.DS_Store',
+        '.env.local',
+        '.env.example',
+        'ormconfig.ts',
+        'tsconfig.json',
+        'package.json',
+        '.env.development',
+        '.gitignore',
+        'package-lock.json',
+        'yarn.lock'
+    ]
+    
     for root, dirs, files in os.walk(base_dir):
-        if "node_modules" in root:
-            continue
+        # Modificar a lista dirs em tempo real para pular diretórios excluídos
+        dirs[:] = [d for d in dirs if d not in exclude_dirs]
         
         relative_path = os.path.relpath(root, base_dir)
         if any(relative_path.startswith(d) for d in include_dirs) or relative_path == ".":
             for file in files:
+                # Verificar se o arquivo não está na lista de exclusão
+                if file in exclude_files:
+                    continue
+                
+                # Verificar a condição do arquivo .env
                 if file.endswith(".env") and not include_env:
                     continue
+                
                 file_path = os.path.join(root, file)
                 # Calcular o nível de profundidade (quantidade de diretórios)
                 depth = len(relative_path.split(os.sep)) if relative_path != "." else 0
