@@ -1,63 +1,82 @@
 from docx import Document
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt  # Importe Pt para definir tamanho de fonte
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Pt
 
-document = Document()
+def create_document():
+    """Cria e retorna um novo documento com configurações padrão."""
+    return Document()
 
-def add_title(title):
-    paragraph = document.add_paragraph()
+def add_title(doc, title):
+    """Adiciona um título centralizado e em negrito."""
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    
+    # Cria o run com o texto e aplica negrito
     run = paragraph.add_run(title)
     run.bold = True
-    # Aplica a fonte e tamanho aqui também
-    run.font.name = 'Times New Roman'
-    run.font.size = Pt(12)  # Tamanho para o título
-    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER  # Título centralizado
-
-def add_paragraph_with_formatting(text, bold=False, align=WD_ALIGN_PARAGRAPH.LEFT):  # Default LEFT
-    paragraph = document.add_paragraph()
-    run = paragraph.add_run(text)
-    run.bold = bold
-    # Aplica a formatação de fonte padrão
     run.font.name = 'Times New Roman'
     run.font.size = Pt(12)
-    
-    # Aplica o alinhamento (padrão LEFT se não for especificado)
-    paragraph.alignment = align
     
     return paragraph
 
-def boldText(paragraph, text):
-    run = paragraph.add_run(text)
+def add_subtitle(doc, subtitle):
+    """Adiciona um subtítulo em negrito e alinhado à esquerda."""
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+    
+    # Cria o run com o texto e aplica negrito
+    run = paragraph.add_run(subtitle)
     run.bold = True
-    # Aplica a formatação de fonte padrão
     run.font.name = 'Times New Roman'
     run.font.size = Pt(12)
-    return run
+    
+    return paragraph
 
-def alignText(paragraph, align):
+def add_paragraph_text(doc, text, bold=False, align=WD_PARAGRAPH_ALIGNMENT.LEFT):
+    """Adiciona um parágrafo com formatação específica."""
+    paragraph = doc.add_paragraph()
     paragraph.alignment = align
+    
+    # Cria o run com o texto
+    run = paragraph.add_run(text)
+    
+    # Aplica negrito se solicitado
+    if bold:
+        run.bold = True
+    
+    run.font.name = 'Times New Roman'
+    run.font.size = Pt(12)
+    
+    return paragraph
 
-def set_document_default_alignment():
-    # Define o alinhamento padrão para LEFT para todos os estilos de parágrafo no documento
-    for style in document.styles:
-        if hasattr(style, 'paragraph_format'):
-            style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
+def add_empty_paragraph(doc):
+    """Adiciona um parágrafo vazio."""
+    return doc.add_paragraph()
 
-# Define o alinhamento padrão para LEFT
-set_document_default_alignment()
+def add_page_break(doc):
+    """Adiciona uma quebra de página."""
+    doc.add_page_break()
 
-# Exemplo de uso
-add_title("Linguagem de Programação III - Entrega 1 - Guilherme Silva Sampaio")
+def save_document(doc, file_path):
+    """Salva o documento no caminho especificado."""
+    doc.save(file_path)
 
-# Adicione um parágrafo formatado (com alinhamento LEFT por padrão)
-p1 = add_paragraph_with_formatting("Este é um texto com formatação aplicada.", bold=False)
-
-# Adicione texto em negrito ao parágrafo existente
-p2 = document.add_paragraph()
-p2.alignment = WD_ALIGN_PARAGRAPH.LEFT  # Define explicitamente como LEFT
-boldText(p2, "Este texto está em negrito. ")
-p2.add_run("Este texto não está em negrito, mas mantém a fonte Times New Roman.").font.name = 'Times New Roman'
-p2.add_run(" Continuando o texto...").font.name = 'Times New Roman'
-
-# Salva o documento
-document.save("test.docx")
+# Função para verificar se o negrito está funcionando (teste)
+def test_bold_functionality(output_path="test_bold.docx"):
+    doc = create_document()
+    
+    # Adiciona título em negrito
+    add_title(doc, "Este é um título em negrito")
+    
+    # Adiciona subtítulo em negrito
+    add_subtitle(doc, "Este é um subtítulo em negrito")
+    
+    # Adiciona texto normal
+    add_paragraph_text(doc, "Este é um texto normal")
+    
+    # Adiciona texto em negrito
+    add_paragraph_text(doc, "Este texto deve estar em negrito", bold=True)
+    
+    # Salva para testar
+    save_document(doc, output_path)
+    print(f"Documento de teste salvo como {output_path}")

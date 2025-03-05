@@ -1,38 +1,44 @@
 import os
 import datetime
-from docx import Document
-from docx.shared import Pt
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx2pdf import convert
-
-def format_text(paragraph, text, bold=False, align=None):
-    run = paragraph.add_run(text)
-    run.bold = bold
-    run.font.name = "Times New Roman"
-    run.font.size = Pt(12)
-    paragraph.alignment = align if align else WD_PARAGRAPH_ALIGNMENT.LEFT  # Ajusta o alinhamento corretamente
-
+import format_docx as doc_format
 
 def add_file_to_doc(doc, dir_name, file_path, add_page_break=True):
+    """Adiciona o conteúdo de um arquivo ao documento."""
     if add_page_break:
-        doc.add_page_break()
+        doc_format.add_page_break(doc)
+    
     relative_path = os.path.splitext(os.path.relpath(file_path, dir_name))[0].replace(os.sep, '.')
     prefix_doc = "diretório.arquivo : "
     title_text = prefix_doc + relative_path
-    format_text(doc.add_paragraph(title_text), "", bold=True)
-    doc.add_paragraph("")
+    
+    # Adiciona o título do arquivo (em negrito)
+    doc_format.add_subtitle(doc, title_text)
+    
+    # Adiciona uma linha em branco
+    doc_format.add_empty_paragraph(doc)
+    
     try:
         with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
-            doc.add_paragraph(file.read())
+            # Adiciona o conteúdo do arquivo
+            doc_format.add_paragraph_text(doc, file.read())
     except Exception as e:
-        doc.add_paragraph(f"Erro ao ler o arquivo: {file_path}\n{str(e)}")
+        error_msg = f"Erro ao ler o arquivo: {file_path}\n{str(e)}"
+        doc_format.add_paragraph_text(doc, error_msg)
 
 def generate_document(base_dir, output_filename, include_dirs, include_env=True):
-    doc = Document()
-    title = "Linguagem de Programação III - Entrega 1 - Guilherme Silva Sampaio"
-    format_text(doc.add_paragraph(title), "", bold=True, align=WD_PARAGRAPH_ALIGNMENT.CENTER)
-    doc.add_paragraph("")
+    """Gera a documentação para os diretórios especificados."""
+    # Cria um novo documento com formatação padrão
+    doc = doc_format.create_document()
     
+    # Adiciona o título principal
+    title = "Linguagem de Programação III - Entrega 1 - Guilherme Silva Sampaio"
+    doc_format.add_title(doc, title)
+    
+    # Adiciona uma linha em branco após o título
+    doc_format.add_empty_paragraph(doc)
+    
+    # Coleta todos os arquivos a serem incluídos
     files_list = []
     for root, dirs, files in os.walk(base_dir):
         if "node_modules" in root:
@@ -47,6 +53,7 @@ def generate_document(base_dir, output_filename, include_dirs, include_env=True)
     
     files_list.sort(key=lambda x: x[1])
     
+    # Adiciona cada arquivo ao documento
     first_file = True
     for root, file_path in files_list:
         if first_file:
@@ -55,11 +62,12 @@ def generate_document(base_dir, output_filename, include_dirs, include_env=True)
         else:
             add_file_to_doc(doc, base_dir, file_path)
     
-    doc.add_page_break()
+    # Adiciona a página de assinatura
+    doc_format.add_page_break(doc)
     date_str = datetime.datetime.now().strftime("%d/%m/%Y")
-    format_text(doc.add_paragraph(f"Dourados, {date_str} -- (Assinatura)"), "")
+    doc_format.add_paragraph_text(doc, f"Dourados, {date_str} -- (Assinatura)")
     
-        # Criar diretório de saída se não existir
+    # Cria diretório de saída se não existir
     output_dir = "arquivos-entrega"
     os.makedirs(output_dir, exist_ok=True)
     
@@ -67,14 +75,8 @@ def generate_document(base_dir, output_filename, include_dirs, include_env=True)
     docx_path = os.path.join(output_dir, output_filename + ".docx")
     pdf_path = os.path.join(output_dir, output_filename + ".pdf")
     
-    doc.save(docx_path)
+    # Salva o documento DOCX
+    doc_format.save_document(doc, docx_path)
+    
+    # Converte para PDF
     convert(docx_path, pdf_path)
-
-# Gerar os documentos
-base_dir_front = "../front-end"
-base_dir_back = "../back-end"
-
-generate_document(base_dir_front, "front-end", ["public", "src"], include_env=False)
-generate_document(base_dir_back, "back-end", ["src"], include_env=True)
-
-
