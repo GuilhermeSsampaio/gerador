@@ -26,6 +26,7 @@ def getDirsToCopy():
     # Listas de diretórios que devem ser excluídos (não copiados)
     exclude_dirs = [
         'node_modules',
+        'imagens',
         '.git',
         '.vscode',
         '__pycache__',
