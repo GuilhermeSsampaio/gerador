@@ -357,7 +357,7 @@ def test_filtering():
     print("Front-end src:", src_files_to_copy['frontend_src'])
 
 
-test_filtering()
+# test_filtering()
 
 def recursivelyListDirContent(directory_path, relative_path=""):
     """Lista recursivamente o conteúdo de um diretório, incluindo subdiretórios e arquivos.
@@ -506,20 +506,63 @@ def printDirectoryStructure(structure, indent=0):
     # Imprime os arquivos
     for file in structure['files']:
         print(' ' * (indent + 4) + f"📄 {file['name']}")
+        
 
-# Função de teste atualizada para incluir a visualização recursiva
-def test_recursive_structure():
-    print("\n===== Estrutura recursiva da pasta src do back-end =====")
+def saveStructureToList(structure, result_list=None):
+    """Salva a estrutura hierárquica de diretórios e arquivos em uma lista."""
+    if result_list is None:
+        result_list = []
+
+    if 'error' in structure:
+        result_list.append(structure['error'])
+        return result_list
+
+    # Adiciona o caminho atual
+    result_list.append(f"{structure['path'] or 'root'}")
+
+    # Adiciona as subpastas (recursivamente)
+    for directory in structure['directories']:
+        saveStructureToList(directory, result_list)
+
+    # Adiciona os arquivos
+    for file in structure['files']:
+        result_list.append(f"{file['name']}")
+
+    return result_list
+
+
+def exportOrderCorrect():
+    # print("\n===== Estrutura recursiva da pasta src do back-end =====")
     backend_structure = recursivelyListBackendSrc()
-    printDirectoryStructure(backend_structure)
-    
-    print("\n===== Estrutura recursiva da pasta src do front-end =====")
+    # printDirectoryStructure(backend_structure)
+    backend_list = saveStructureToList(backend_structure)
+    # print("\nEstrutura salva em vetor (back-end):")
+    # print(backend_list)
+
+    # print("\n===== Estrutura recursiva da pasta src do front-end =====")
     frontend_structure = recursivelyListFrontendSrc()
-    printDirectoryStructure(frontend_structure)
-    
-    print("\n===== Estrutura recursiva da pasta public do front-end =====")
+    # printDirectoryStructure(frontend_structure)
+    frontend_list = saveStructureToList(frontend_structure)
+    # print("\nEstrutura salva em vetor (front-end):")
+    # print(frontend_list)
+
+    # print("\n===== Estrutura recursiva da pasta public do front-end =====")
     public_structure = recursivelyListFrontendPublic()
-    printDirectoryStructure(public_structure)
+    # printDirectoryStructure(public_structure)
+    public_list = saveStructureToList(public_structure)
+    # print("\nEstrutura salva em vetor (public):")
+    # print(public_list)
 
+    # Junta as listas em uma única lista
+    combined_front =  frontend_list + public_list
+    print("\nlista backend")
+    print(backend_list)
+    print("\nLista combinada:")
+    print(combined_front)
 
-test_recursive_structure()
+    return combined_front, backend_list
+
+# Chama a função de teste e obtém a lista combinada
+# combined_list = exportOrderCorrect()
+
+    

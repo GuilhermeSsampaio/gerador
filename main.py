@@ -44,11 +44,7 @@ def main():
             
     except Exception as e:
         print(f"Erro ao gerar documentos: {e}")
-
-# Para testar se o negrito funciona
-# import format_docx
-# format_docx.test_bold_functionality()
-
+        
 if __name__ == "__main__":
     main()
     

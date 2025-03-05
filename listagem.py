@@ -198,20 +198,20 @@ def listFilesOfDirectory(directory_path):
         return [f"Erro: Diretório {directory_path} não encontrado"]
 
     
-# Adicione esse código ao final do arquivo para testar a função
-if correctDir:
-    print("\nSubdiretórios de back-end:")
-    backend_dirs = listSubdirsOfBackend()
-    print(backend_dirs)
+# # Adicione esse código ao final do arquivo para testar a função
+# if correctDir:
+#     print("\nSubdiretórios de back-end:")
+#     backend_dirs = listSubdirsOfBackend()
+#     print(backend_dirs)
     
-    print("\nSubdiretórios de frontend:")
-    frontend_dirs = listSubdirsOfFrontend()
-    print(frontend_dirs)
+#     print("\nSubdiretórios de frontend:")
+#     frontend_dirs = listSubdirsOfFrontend()
+#     print(frontend_dirs)
     
-    print("\nArquivos do back-end:")
-    backend_files = listFilesOfBackend()
-    print(backend_files)
+#     print("\nArquivos do back-end:")
+#     backend_files = listFilesOfBackend()
+#     print(backend_files)
     
-    print("\nArquivos do front-end:")
-    frontend_files = listFilesOfFrontend() 
-    print(frontend_files)
+#     print("\nArquivos do front-end:")
+#     frontend_files = listFilesOfFrontend() 
+#     print(frontend_files)
