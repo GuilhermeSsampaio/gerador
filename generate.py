@@ -27,26 +27,25 @@ def add_file_to_doc(doc, dir_name, file_path, add_page_break=True):
 
 def collect_files(base_dir, include_dirs, include_env):
     """Coleta todos os arquivos, priorizando os dentro de subpastas."""
-    subfolder_files = []
-    root_files = []
+    all_files = []
     
     for root, dirs, files in os.walk(base_dir):
         if "node_modules" in root:
             continue
         
         relative_path = os.path.relpath(root, base_dir)
-        if any(relative_path.startswith(d) for d in include_dirs):
+        if any(relative_path.startswith(d) for d in include_dirs) or relative_path == ".":
             for file in files:
                 if file.endswith(".env") and not include_env:
                     continue
                 file_path = os.path.join(root, file)
-                
-                if relative_path == ".":  # Arquivos na raiz
-                    root_files.append((root, file_path))
-                else:  # Arquivos dentro de subpastas
-                    subfolder_files.append((root, file_path))
+                # Calcular o nível de profundidade (quantidade de diretórios)
+                depth = len(relative_path.split(os.sep)) if relative_path != "." else 0
+                all_files.append((depth, relative_path, file, file_path))
     
-    return sorted(subfolder_files, key=lambda x: x[1]) + sorted(root_files, key=lambda x: x[1])
+    # Ordenar primeiro por profundidade (decrescente), depois pelo caminho
+    return [(root, file_path) for depth, rel_path, file, file_path in 
+            sorted(all_files, key=lambda x: (-x[0], x[1], x[2]))]
 
 def generate_document(base_dir, output_filename, include_dirs, include_env=True):
     """Gera a documentação para os diretórios especificados."""
