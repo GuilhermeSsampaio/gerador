@@ -6,6 +6,7 @@ from sub_listagem import exportOrderCorrect
 from functools import cmp_to_key  # Importa a ferramenta para usar comparação customizada
 
 name = input("Digite o nome completo do aluno: ")
+entrega = input("Digite o número da entrega: ")
 
 def add_file_to_doc(doc, dir_name, file_path, add_page_break=True):
     """Adiciona o conteúdo de um arquivo ao documento."""
@@ -135,7 +136,7 @@ def generate_document(base_dir, output_filename, include_dirs, include_env=True)
     """Gera a documentação para os diretórios especificados."""
     doc = doc_format.create_document()
     
-    title = "Linguagem de Programação III - Entrega 1 - " + name
+    title = "Linguagem de Programação III - Entrega "+entrega + " - "  + name
     doc_format.add_title(doc, title)
     doc_format.add_empty_paragraph(doc)
     
@@ -151,7 +152,7 @@ def generate_document(base_dir, output_filename, include_dirs, include_env=True)
         add_file_to_doc(doc, base_dir, file_path, add_page_break=not first_file)
         first_file = False
     
-    doc_format.add_page_break(doc)
+    doc_format.add_empty_paragraph(doc)
     date_str = datetime.datetime.now().strftime("%d/%m/%Y")
     doc_format.add_paragraph_text(doc, f"Dourados, {date_str} -- (Assinatura)")
     
