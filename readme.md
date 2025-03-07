@@ -18,7 +18,7 @@ Este projeto gera documentos Word e PDF contendo códigos-fonte organizados a pa
 
 ## Instalação
 
-1. Clone o repositório (dentro da pasta de LPIII):
+1. Clone o repositório (dentro da pasta de LPIII - que deve contar os subdiretórios front-end e back-end):
 
 ```sh
 git clone [https://github.com/GuilhermeSsampaio/gerador-documents-lp.git](https://github.com/GuilhermeSsampaio/gerador)
