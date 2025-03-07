@@ -1,0 +1,22 @@
+{
+  "name": "screenshots-gerador",
+  "version": "1.0.0",
+  "description": "tira print do projeto automaticamente",
+  "main": "screenshot_form.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuilhermeSsampaio/gerador-documents-lp.git"
+  },
+  "author": "Guisamp",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GuilhermeSsampaio/gerador-documents-lp/issues"
+  },
+  "homepage": "https://github.com/GuilhermeSsampaio/gerador-documents-lp#readme",
+  "dependencies": {
+    "puppeteer": "^24.4.0"
+  }
+}

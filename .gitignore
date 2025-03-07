@@ -1,6 +1,8 @@
 
 
 arquivos-entrega/*
+node_modules/
+screenshots
 venv
 
 
