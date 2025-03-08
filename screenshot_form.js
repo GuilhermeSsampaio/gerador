@@ -2,56 +2,96 @@ const puppeteer = require("puppeteer");
 const path = require("path");
 const fs = require("fs");
 
-// Cria a pasta de screenshots, se não existir
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Configuração da pasta para screenshots
 const screenshotDir = path.join(__dirname, "screenshots");
 if (!fs.existsSync(screenshotDir)) {
   fs.mkdirSync(screenshotDir);
 }
 
-async function telaDeLoginUserNaoCadastrado() {
+/**
+ * Tira um screenshot e salva com o nome especificado.
+ */
+async function takeScreenshot(page, filename) {
+  const screenshotPath = path.join(screenshotDir, filename);
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+}
+
+/**
+ * Abre uma página no URL informado e retorna o browser e a página.
+ */
+async function openPage(url) {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
+  await page.goto(url, { waitUntil: "networkidle2" });
+  return { browser, page };
+}
 
+/**
+ * Seleciona uma opção do dropdown com base no texto.
+ */
+async function selectDropdownItem(page, dropdownSelector, optionText) {
+  await page.waitForSelector(dropdownSelector);
+  await page.click(dropdownSelector);
+  await page.waitForSelector(".p-dropdown-panel");
+  await page.evaluate((optionText) => {
+    const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
+    const targetItem = items.find(
+      (item) => item.textContent.trim() === optionText
+    );
+    if (targetItem) targetItem.click();
+  }, optionText);
+}
+
+/**
+ * Clica em um botão que contenha o texto especificado.
+ * Se contextSelector for informado, a busca é limitada a esse elemento.
+ */
+async function clickButtonByText(page, buttonText, contextSelector = null) {
+  await page.evaluate(
+    (buttonText, contextSelector) => {
+      const context = contextSelector
+        ? document.querySelector(contextSelector)
+        : document;
+      const buttons = Array.from(context.querySelectorAll("button"));
+      const target = buttons.find((btn) =>
+        btn.textContent.includes(buttonText)
+      );
+      if (target) target.click();
+    },
+    buttonText,
+    contextSelector
+  );
+}
+
+/**
+ * Screenshot da página de login para usuário não cadastrado.
+ */
+async function screenshotLoginPage() {
+  const { browser, page } = await openPage("http://localhost:3000/");
   try {
-    await page.goto("http://localhost:3000/", {
-      waitUntil: "networkidle2",
-    });
-
-    const screenshotPath = path.join(screenshotDir, "pagina_inicial.png");
-    await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+    await takeScreenshot(page, "pagina_inicial.png");
   } catch (error) {
     console.error("Erro ao acessar a página inicial:", error);
+  } finally {
+    await browser.close();
   }
 }
 
-async function FormPrenchidoErros() {
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
-
+/**
+ * Preenche o formulário com dados errados para exibir as mensagens de erro.
+ */
+async function fillFormWithErrors() {
+  const { browser, page } = await openPage(
+    "http://localhost:3000/criar-usuario"
+  );
   try {
-    await page.goto("http://localhost:3000/criar-usuario", {
-      waitUntil: "networkidle2",
-    });
-
-    await page.waitForSelector(".p-dropdown");
-    await page.click(".p-dropdown");
-
-    await page.waitForSelector(".p-dropdown-panel");
-
-    await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
-      const targetItem = items.find(
-        (item) => item.textContent.trim() === "Maestro"
-      );
-      if (targetItem) {
-        targetItem.click();
-      }
-    });
+    await selectDropdownItem(page, ".p-dropdown", "Maestro");
 
     await page.waitForSelector('input[name="cpf"]');
     await page.type('input[name="cpf"]', "123.456.789-40");
-
     await page.type('input[name="nome"]', "");
     await page.type('input[name="email"]', "joaoomaestr");
     await page.type('input[name="senha"]', "senha123");
@@ -62,24 +102,10 @@ async function FormPrenchidoErros() {
     );
     await page.type('input[name="resposta"]', "Rex");
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll("button"));
-      const salvarButton = buttons.find((btn) =>
-        btn.textContent.includes("Salvar")
-      );
-      if (salvarButton) {
-        salvarButton.click();
-      }
-    });
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const screenshotPath = path.join(
-      screenshotDir,
-      "formulario_enviado_erros.png"
-    );
-    await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+    await delay(100);
+    await clickButtonByText(page, "Salvar");
+    await delay(100);
+    await takeScreenshot(page, "formulario_enviado_erros.png");
   } catch (error) {
     console.error("Erro ao preencher e enviar o formulário:", error);
   } finally {
@@ -87,33 +113,19 @@ async function FormPrenchidoErros() {
   }
 }
 
-async function FormPreenchidoCorretamente() {
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
-
+/**
+ * Preenche o formulário corretamente, exibe o modal de confirmação e, após confirmação,
+ * preenche os dados específicos da próxima tela.
+ */
+async function fillFormCorrectly() {
+  const { browser, page } = await openPage(
+    "http://localhost:3000/criar-usuario"
+  );
   try {
-    await page.goto("http://localhost:3000/criar-usuario", {
-      waitUntil: "networkidle2",
-    });
-
-    await page.waitForSelector(".p-dropdown");
-    await page.click(".p-dropdown");
-
-    await page.waitForSelector(".p-dropdown-panel");
-
-    await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
-      const targetItem = items.find(
-        (item) => item.textContent.trim() === "Maestro"
-      );
-      if (targetItem) {
-        targetItem.click();
-      }
-    });
-
+    // Preenchimento do formulário principal
+    await selectDropdownItem(page, ".p-dropdown", "Maestro");
     await page.waitForSelector('input[name="cpf"]');
     await page.type('input[name="cpf"]', "123.456.789-40");
-
     await page.type('input[name="nome"]', "Jõao Arrocha");
     await page.type('input[name="email"]', "joaoomaestro@gmail.com");
     await page.type('input[name="senha"]', "senha123");
@@ -124,150 +136,108 @@ async function FormPreenchidoCorretamente() {
     );
     await page.type('input[name="resposta"]', "Rex");
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await delay(100);
+    await takeScreenshot(page, "form_preenchido_corretamente.png");
 
-    const screenshotPath = path.join(
-      screenshotDir,
-      "form_preenchido_corretamente.png"
-    );
-    await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+    // Exibe o modal de confirmação e clica em "Salvar" nele
+    await showConfirmationModal(page);
 
-    await showConferirDados(page);
+    // Após confirmação, preenche dados específicos na próxima tela
+    await fillSpecificData(page);
   } catch (error) {
-    console.error("Erro ao preencher e enviar o formulário:", error);
+    console.error("Erro ao preencher o formulário corretamente:", error);
   } finally {
     await browser.close();
   }
 }
 
-async function showConferirDados(page) {
-  // Desabilita animações/transições para capturar o estado final do modal
-  // await page.addStyleTag({
-  //   content: `* { transition: none !important; animation: none !important; }`,
-  // });
-
-  // Clica no botão "Salvar" para abrir o modal de confirmação
-  await page.evaluate(() => {
-    const buttons = Array.from(document.querySelectorAll("button"));
-    const salvarButton = buttons.find((btn) =>
-      btn.textContent.includes("Salvar")
-    );
-    if (salvarButton) {
-      salvarButton.click();
-    }
-  });
-
-  // Aguarda que o modal esteja visível
+/**
+ * Exibe o modal de confirmação, ajusta o zoom para caber a tela e tira um screenshot.
+ * Em seguida, clica no botão "Salvar" dentro do modal.
+ */
+async function showConfirmationModal(page) {
+  // Abre o modal de confirmação clicando em "Salvar" no formulário
+  await clickButtonByText(page, "Salvar");
   await page.waitForSelector(".p-dialog.p-component", { visible: true });
-
-  // Aguarda até que o modal esteja centralizado na tela
-  // await page.waitForFunction(() => {
-  //   const modal = document.querySelector(".p-dialog.p-component");
-  //   if (!modal) return false;
-  //   const rect = modal.getBoundingClientRect();
-  //   return (
-  //     Math.abs(rect.left + rect.width / 2 - window.innerWidth / 2) < 5 &&
-  //     Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2) < 5
-  //   );
-  // });
-
-  // Aguarda que o backdrop esteja totalmente visível (ajuste a classe se necessário)
-  // await page
-  //   .waitForSelector(".p-dialog-mask", { visible: true })
-  //   .catch(() => {});
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  await delay(100);
+  // Ajusta o zoom para visualizar o modal e o backdrop
   await page.evaluate(() => {
     document.body.style.zoom = "0.65";
   });
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Opcional: rolar para o topo para garantir a visualização completa
-  // await page.evaluate(() => window.scrollTo(0, 0));
-
-  // Tira o screenshot do modal com o backdrop e centralizado
-  const screenshotPath = path.join(screenshotDir, "conferir.png");
-  await page.screenshot({ path: screenshotPath, fullPage: true });
-  console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Clica no botão "Salvar" dentro do modal de confirmação
-
-  await cadastroDadosEspecificos(page);
+  await delay(100);
+  await takeScreenshot(page, "conferir.png");
+  await delay(100);
+  // Clica em "Salvar" dentro do modal para confirmar
+  await clickButtonByText(page, "Salvar", ".p-dialog.p-component");
+  await delay(100);
 }
 
-async function cadastroDadosEspecificos(page) {
-  await page.evaluate(() => {
-    const modal = document.querySelector(".p-dialog.p-component");
-    const buttons = Array.from(modal.querySelectorAll("button"));
-    const salvarButton = buttons.find((btn) =>
-      btn.textContent.includes("Salvar")
-    );
-    if (salvarButton) {
-      salvarButton.click();
-    }
-  });
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
+/**
+ * Preenche os dados específicos da próxima tela após a confirmação do modal.
+ */
+async function fillSpecificData(page) {
   await page.waitForSelector(".p-dropdown");
+  const dropdowns = await page.$$(".p-dropdown");
 
   // Seleciona o primeiro dropdown e escolhe "Elegante"
-  const dropdowns = await page.$$(".p-dropdown");
   await dropdowns[0].click();
-
   await page.waitForSelector(".p-dropdown-panel");
-
   await page.evaluate(() => {
     const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
-    const targetItem = items.find(
-      (item) => item.textContent.trim() === "Elegante"
-    );
-    if (targetItem) {
-      targetItem.click();
-    }
+    const target = items.find((item) => item.textContent.trim() === "Elegante");
+    if (target) target.click();
   });
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await delay(100);
 
   // Seleciona o segundo dropdown e escolhe "Brasileiro"
   await dropdowns[1].click();
-
   await page.waitForSelector(".p-dropdown-panel");
-
   await page.evaluate(() => {
     const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
-    const targetItem = items.find(
+    const target = items.find(
       (item) => item.textContent.trim() === "Brasileiro"
     );
-    if (targetItem) {
-      targetItem.click();
-    }
+    if (target) target.click();
   });
+  await delay(100);
 
-  await page.type('input[name="anos_experiência"]', "20");
+  // Preenche o campo de anos de experiência usando a função auxiliar
+  await fillInputNumberUsingKeyboard(
+    page,
+    'input[name="anos_experiência"]',
+    "20"
+  );
+  await delay(100);
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  const screenshotPath = path.join(screenshotDir, "dados_especificos.png");
-  await page.screenshot({ path: screenshotPath, fullPage: true });
-  console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+  await takeScreenshot(page, "dados_especificos.png");
+  await delay(4000);
+  await clickButtonByText(page, "Cadastrar");
+  await takeScreenshot(page, "cadastro_finalizado.png");
 }
 
-async function UsuarioProponenteLogado() {}
+// Função auxiliar para preencher o InputNumber via teclado
+async function fillInputNumberUsingKeyboard(page, selector, value) {
+  await page.waitForSelector(selector);
+  // Foca no input
+  await page.focus(selector);
+  // Seleciona todo o conteúdo do input (para limpar)
+  await page.click(selector, { clickCount: 3 });
+  // Pressiona Backspace para remover o valor existente
+  await page.keyboard.press("Backspace");
+  // Digita o novo valor
+  await page.keyboard.type(value);
+  // Dispara o blur para que o componente atualize (opcional)
+  await page.keyboard.press("Tab");
+}
 
-async function loginPreenchidoProponenteCadastrado() {}
-
-async function consultaDadosComunsUser() {}
-
-async function consultaDadosEspecificosUser() {}
-
-const executarTestes = async () => {
-  // await telaDeLoginUserNaoCadastrado();
-  // await FormPrenchidoErros();
-  await FormPreenchidoCorretamente();
-  // await cadastroDadosEspecificos();
-};
+/**
+ * Função principal que executa os testes desejados.
+ */
+async function executarTestes() {
+  // Descomente conforme necessário:
+  await screenshotLoginPage();
+  await fillFormWithErrors();
+  await fillFormCorrectly();
+}
 
 executarTestes();
