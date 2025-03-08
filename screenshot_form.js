@@ -190,12 +190,84 @@ async function showConferirDados(page) {
   const screenshotPath = path.join(screenshotDir, "conferir.png");
   await page.screenshot({ path: screenshotPath, fullPage: true });
   console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Clica no botão "Salvar" dentro do modal de confirmação
+
+  await cadastroDadosEspecificos(page);
 }
+
+async function cadastroDadosEspecificos(page) {
+  await page.evaluate(() => {
+    const modal = document.querySelector(".p-dialog.p-component");
+    const buttons = Array.from(modal.querySelectorAll("button"));
+    const salvarButton = buttons.find((btn) =>
+      btn.textContent.includes("Salvar")
+    );
+    if (salvarButton) {
+      salvarButton.click();
+    }
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  await page.waitForSelector(".p-dropdown");
+
+  // Seleciona o primeiro dropdown e escolhe "Elegante"
+  const dropdowns = await page.$$(".p-dropdown");
+  await dropdowns[0].click();
+
+  await page.waitForSelector(".p-dropdown-panel");
+
+  await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
+    const targetItem = items.find(
+      (item) => item.textContent.trim() === "Elegante"
+    );
+    if (targetItem) {
+      targetItem.click();
+    }
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Seleciona o segundo dropdown e escolhe "Brasileiro"
+  await dropdowns[1].click();
+
+  await page.waitForSelector(".p-dropdown-panel");
+
+  await page.evaluate(() => {
+    const items = Array.from(document.querySelectorAll("li.p-dropdown-item"));
+    const targetItem = items.find(
+      (item) => item.textContent.trim() === "Brasileiro"
+    );
+    if (targetItem) {
+      targetItem.click();
+    }
+  });
+
+  await page.type('input[name="anos_experiência"]', "20");
+
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  const screenshotPath = path.join(screenshotDir, "dados_especificos.png");
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  console.log(`✅ Screenshot salvo em: ${screenshotPath}`);
+}
+
+async function UsuarioProponenteLogado() {}
+
+async function loginPreenchidoProponenteCadastrado() {}
+
+async function consultaDadosComunsUser() {}
+
+async function consultaDadosEspecificosUser() {}
 
 const executarTestes = async () => {
   // await telaDeLoginUserNaoCadastrado();
   // await FormPrenchidoErros();
   await FormPreenchidoCorretamente();
+  // await cadastroDadosEspecificos();
 };
 
 executarTestes();
