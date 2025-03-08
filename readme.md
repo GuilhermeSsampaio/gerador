@@ -26,7 +26,11 @@ cd gerador
 ```
 
 2. Execute o script principal para gerar os documentos:
+crie o venv:
+```sh
+python -m venv venv
 
+```
 ```sh
 python startGerador.py
 ```
